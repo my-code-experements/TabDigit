@@ -1,28 +1,32 @@
 package com.xenione.digit;
 
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.os.Build;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.View;
 
-import androidx.core.view.ViewCompat;
+import ohos.agp.colors.RgbColor;
+import ohos.agp.components.AttrSet;
+import ohos.agp.components.Component;
+import ohos.agp.components.element.ShapeElement;
+import ohos.agp.render.Canvas;
+import ohos.agp.render.Paint;
+import ohos.agp.render.render3d.Engine;
+import ohos.agp.render.render3d.impl.AgpEngineFactory;
+import ohos.agp.utils.Color;
+import ohos.agp.utils.Matrix;
+import ohos.agp.utils.Rect;
+import ohos.app.Context;
+import ohos.app.dispatcher.TaskDispatcher;
+import ohos.hiviewdfx.HiLog;
+import ohos.hiviewdfx.HiLogLabel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Eugeni on 16/10/2016.
  */
-public class TabDigit extends View implements Runnable {
+public class TabDigit extends Component implements Runnable, Component.DrawTask,
+        Component.EstimateSizeListener, Component.LayoutRefreshedListener {
+    private static final HiLogLabel LABEL_LOG = new HiLogLabel(HiLog.LOG_APP, 0x00201, "-MainAbility-");
 
     private static final String TAG = "TabDigit";
     /*
@@ -36,7 +40,10 @@ public class TabDigit extends View implements Runnable {
     private Tab mBottomTab;
 
     private Tab mMiddleTab;
+    Engine engine;
+    TaskDispatcher uiTaskDispatcher;
 
+    //#region internal variables
     private List<Tab> tabs = new ArrayList<>(3);
 
     private AbstractTabAnimation tabAnimation;
@@ -59,28 +66,36 @@ public class TabDigit extends View implements Runnable {
     private int mPadding = 0;
 
     private char[] mChars = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    //#endregion internal variables
+
+    //#region constructor
 
     public TabDigit(Context context) {
-        this(context, null);
+        super(context);
+        init(context, null);
     }
 
-    public TabDigit(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+    public TabDigit(Context context, AttrSet attrSet) {
+        super(context, attrSet);
+        init(context, attrSet);
     }
 
-    public TabDigit(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context, attrs);
+    public TabDigit(Context context, AttrSet attrSet, String styleName) {
+        super(context, attrSet, styleName);
+        init(context, attrSet);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public TabDigit(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init(context, attrs);
+    public TabDigit(Context context, AttrSet attrSet, int resId) {
+        super(context, attrSet, resId);
+        init(context, attrSet);
     }
 
-    public void init(Context context, AttributeSet attrs) {
-        Log.d(TAG, "init: ");
+    //#endregion constructor
+
+    public void init(Context context, AttrSet attrs) {
+        addDrawTask(this);
+        setEstimateSizeListener(this);
+        setLayoutRefreshedListener(this);
         initPaints();
 
         int padding = -1;
@@ -89,64 +104,72 @@ public class TabDigit extends View implements Runnable {
         int textColor = 1;
         int backgroundColor = 1;
         boolean reverseRotation = false;
+        /**
+         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.TabDigit, 0, 0);
+         final int num = ta.getIndexCount();
+         for (int i = 0; i < num; i++) {
+         int attr = ta.getIndex(i);
+         if (attr == R.styleable.TabDigit_textSize) {
+         textSize = ta.getDimensionPixelSize(attr, -1);
+         Log.d(TAG, "init: textSize " + textSize);
+         } else if (attr == R.styleable.TabDigit_padding) {
+         padding = ta.getDimensionPixelSize(attr, -1);
+         } else if (attr == R.styleable.TabDigit_cornerSizeZ) {
+         cornerSize = ta.getDimensionPixelSize(attr, -1);
+         } else if (attr == R.styleable.TabDigit_textColor) {
+         textColor = ta.getColor(attr, 1);
+         } else if (attr == R.styleable.TabDigit_backgroundColor) {
+         backgroundColor = ta.getColor(attr, 1);
+         } else if (attr == R.styleable.TabDigit_reverseRotation) {
+         reverseRotation = ta.getBoolean(attr, false);
+         }
+         }
+         ta.recycle();
+         *
+         */
 
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.TabDigit, 0, 0);
-        final int num = ta.getIndexCount();
-        for (int i = 0; i < num; i++) {
-            int attr = ta.getIndex(i);
-            if (attr == R.styleable.TabDigit_textSize) {
-                textSize = ta.getDimensionPixelSize(attr, -1);
-                Log.d(TAG, "init: textSize " + textSize);
-            } else if (attr == R.styleable.TabDigit_padding) {
-                padding = ta.getDimensionPixelSize(attr, -1);
-            } else if (attr == R.styleable.TabDigit_cornerSizeZ) {
-                cornerSize = ta.getDimensionPixelSize(attr, -1);
-            } else if (attr == R.styleable.TabDigit_textColor) {
-                textColor = ta.getColor(attr, 1);
-            } else if (attr == R.styleable.TabDigit_backgroundColor) {
-                backgroundColor = ta.getColor(attr, 1);
-            } else if (attr == R.styleable.TabDigit_reverseRotation) {
-                reverseRotation = ta.getBoolean(attr, false);
-            }
-        }
-        ta.recycle();
+        /** set values
+         *
+         if (padding > 0) {
+         mPadding = padding;
+         }
 
-        if (padding > 0) {
-            mPadding = padding;
-        }
+         if (textSize > 0) {
+         mNumberPaint.setTextSize(textSize);
+         }
 
-        if (textSize > 0) {
-            mNumberPaint.setTextSize(textSize);
-        }
+         if (cornerSize > 0) {
+         mCornerSize = cornerSize;
+         }
 
-        if (cornerSize > 0) {
-            mCornerSize = cornerSize;
-        }
+         if (textColor < 1) {
+         mNumberPaint.setColor(textColor);
+         }
 
-        if (textColor < 1) {
-            mNumberPaint.setColor(textColor);
-        }
-
-        if (backgroundColor < 1) {
-            mBackgroundPaint.setColor(backgroundColor);
-        }
+         if (backgroundColor < 1) {
+         mBackgroundPaint.setColor(backgroundColor);
+         }
+         */
 
         mReverseRotation = reverseRotation;
         mReverseRotation = true;
 
+        Optional<Engine> optionalEngine = AgpEngineFactory.createEngine();
+        engine = optionalEngine.get();
+        uiTaskDispatcher = getContext().getUITaskDispatcher();
         initTabs();
+
     }
 
     private void initPaints() {
-        Log.d(TAG, "initPaints: ");
         mNumberPaint = new Paint();
         mNumberPaint.setAntiAlias(true);
-        mNumberPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mNumberPaint.setStyle(Paint.Style.FILLANDSTROKE_STYLE);
         mNumberPaint.setColor(Color.WHITE);
 
         mDividerPaint = new Paint();
         mDividerPaint.setAntiAlias(true);
-        mDividerPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mDividerPaint.setStyle(Paint.Style.FILLANDSTROKE_STYLE);
         mDividerPaint.setColor(Color.WHITE);
         mDividerPaint.setStrokeWidth(1);
 
@@ -163,7 +186,6 @@ public class TabDigit extends View implements Runnable {
     }
 
     private void initTabs() {
-        Log.d(TAG, "initTabs: ");
         // top Tab
         mTopTab = new Tab();
         mTopTab.rotate(180);
@@ -185,67 +207,31 @@ public class TabDigit extends View implements Runnable {
     }
 
     public void setChar(int index) {
-        Log.d(TAG, "setChar: ");
         setInternalChar(index);
         invalidate();
     }
 
     private void setInternalChar(int index) {
-        Log.d(TAG, "setInternalChar: ");
         for (Tab tab : tabs) {
             tab.setChar(index);
         }
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        Log.d(TAG, "onMeasure: ");
-        calculateTextSize(mTextMeasured);
-
-        int childWidth = mTextMeasured.width() + mPadding;
-        int childHeight = mTextMeasured.height() + mPadding;
-        measureTabs(childWidth, childHeight);
-
-        int maxChildWidth = mMiddleTab.maxWith();
-        int maxChildHeight = 2 * mMiddleTab.maxHeight();
-        int resolvedWidth = resolveSize(maxChildWidth, widthMeasureSpec);
-        int resolvedHeight = resolveSize(maxChildHeight, heightMeasureSpec);
-
-        Log.d(TAG, "TabDigit: onEstimateSize: mTopTab -> " + mTopTab.mStartBounds);
-        Log.d(TAG, "TabDigit: onEstimateSize: mBottomTab -> " + mBottomTab.mStartBounds);
-        Log.d(TAG, "TabDigit: onEstimateSize: mMiddleTab -> " + mMiddleTab.mStartBounds);
-
-        setMeasuredDimension(resolvedWidth, resolvedHeight);
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        Log.d(TAG, "onSizeChanged: ");
-        if (w != oldw || h != oldh) {
-            setupProjectionMatrix();
-        }
-    }
 
     private void setupProjectionMatrix() {
         mProjectionMatrix.reset();
         int centerY = getHeight() / 2;
         int centerX = getWidth() / 2;
-        Log.d(TAG, "setupProjectionMatrix: centerY -> " + centerY);
-        Log.d(TAG, "setupProjectionMatrix: centerX -> " + centerX);
-        Log.d(TAG, "setupProjectionMatrix: mProjectionMatrix -> " + mProjectionMatrix);
         MatrixHelper.translate(mProjectionMatrix, centerX, -centerY, 0);
-        Log.d(TAG, "setupProjectionMatrix: mProjectionMatrix -> " + mProjectionMatrix);
     }
 
     private void measureTabs(int width, int height) {
-        Log.d(TAG, "measureTabs: ");
         for (Tab tab : tabs) {
             tab.measure(width, height);
         }
     }
 
     private void drawTabs(Canvas canvas) {
-        Log.d(TAG, "drawTabs: ");
         int i = 0;
         for (Tab tab : tabs) {
             tab.draw(canvas, i);
@@ -254,33 +240,39 @@ public class TabDigit extends View implements Runnable {
     }
 
     private void drawDivider(Canvas canvas) {
-        Log.d(TAG, "drawDivider: ");
         canvas.save();
         canvas.concat(mProjectionMatrix);
-        canvas.drawLine(-canvas.getWidth() / 2, 0, canvas.getWidth() / 2, 0, mDividerPaint);
+        canvas.drawLine(
+                -canvas.getLocalClipBounds().getWidth() / 2,
+                0,
+                canvas.getLocalClipBounds().getWidth() / 2,
+                0,
+                mDividerPaint
+        );
         canvas.restore();
     }
 
     private void calculateTextSize(Rect rect) {
-        Log.d(TAG, "calculateTextSize: ");
-        mNumberPaint.getTextBounds("8", 0, 1, rect);
+        mNumberPaint.getTextBounds(
+                "8"
+                //, 0, 1, rect
+        );
     }
 
     public void setTextSize(int size) {
-        Log.d(TAG, "setTextSize: ");
         mNumberPaint.setTextSize(size);
-        requestLayout();
+        invalidate();
+//        requestLayout();
     }
 
     public int getTextSize() {
-        Log.d(TAG, "getTextSize: ");
         return (int) mNumberPaint.getTextSize();
     }
 
     public void setPadding(int padding) {
-        Log.d(TAG, "setPadding: ");
         mPadding = padding;
-        requestLayout();
+        invalidate();
+//        requestLayout();
     }
 
     /**
@@ -290,83 +282,155 @@ public class TabDigit extends View implements Runnable {
      * @param chars
      */
     public void setChars(char[] chars) {
-        Log.d(TAG, "setChars: ");
         mChars = chars;
     }
 
     public char[] getChars() {
-        Log.d(TAG, "getChars: ");
         return mChars;
     }
 
 
-    public void setDividerColor(int color) {
-        Log.d(TAG, "setDividerColor: ");
+    public void setDividerColor(Color color) {
         mDividerPaint.setColor(color);
     }
 
-    public int getPadding() {
-        Log.d(TAG, "getPadding: ");
+    // todo: fix the clash
+    public int getMPadding() {
         return mPadding;
     }
 
-    public void setTextColor(int color) {
-        Log.d(TAG, "setTextColor: ");
+    public void setTextColor(Color color) {
         mNumberPaint.setColor(color);
     }
 
-    public int getTextColor() {
-        Log.d(TAG, "getTextColor: ");
+    public Color getTextColor() {
         return mNumberPaint.getColor();
     }
 
     public void setCornerSize(int cornerSize) {
-        Log.d(TAG, "setCornerSize: ");
         mCornerSize = cornerSize;
         invalidate();
     }
 
     public int getCornerSize() {
-        Log.d(TAG, "getCornerSize: ");
         return mCornerSize;
     }
 
-    public void setBackgroundColor(int color) {
-        Log.d(TAG, "setBackgroundColor: ");
+    public void setBackgroundColor(Color color) {
         mBackgroundPaint.setColor(color);
     }
 
-    public int getBackgroundColor() {
-        Log.d(TAG, "getBackgroundColor: ");
+    public Color getBackgroundColor() {
         return mBackgroundPaint.getColor();
     }
 
     public void start() {
-        Log.d(TAG, "start: ");
         tabAnimation.start();
         invalidate();
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        Log.d(TAG, "onDraw: ");
-        drawTabs(canvas);
-        drawDivider(canvas);
-        ViewCompat.postOnAnimationDelayed(this, this, 40);
-    }
 
     @Override
     public void run() {
-        Log.d(TAG, "run: ");
         tabAnimation.run();
         invalidate();
     }
 
     public void sync() {
-        Log.d(TAG, "sync: ");
         tabAnimation.sync();
         invalidate();
     }
+
+
+    /**
+     * Measure dimension from estimate dimension.
+     *
+     * @param defaultSize Default width/height.
+     * @param measureSpec estimate width/height.
+     * @return Measured dimension.
+     */
+    private int measureDimension(int defaultSize, int measureSpec) {
+        int result;
+        int specMode = EstimateSpec.getMode(measureSpec);
+        int specSize = EstimateSpec.getSize(measureSpec);
+        if (specMode == EstimateSpec.PRECISE) {
+            result = specSize;
+        } else {
+            result = defaultSize; // UNSPECIFIED
+            if (specMode == EstimateSpec.NOT_EXCEED) {
+                result = Math.min(result, specSize);
+            }
+        }
+        return result;
+    }
+
+    //#region listeners
+
+    int oldWidth = -1;
+    int oldHeight = -1;
+
+    @Override
+    public void onRefreshed(Component component) {
+        HiLog.warn(LABEL_LOG, "TabDigit: onRefreshed");
+        if (oldWidth != component.getWidth() || oldHeight != component.getHeight()) {
+//            setupProjectionMatrix();
+        }
+        oldWidth = component.getWidth();
+        oldHeight = component.getHeight();
+    }
+
+    //    @Override
+//    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+//        Log.d(TAG, "onSizeChanged: ");
+//        if (w != oldw || h != oldh) {
+//            setupProjectionMatrix();
+//        }
+//    }
+
+
+    @Override
+    public boolean onEstimateSize(int widthMeasureSpec, int heightMeasureSpec) {
+        HiLog.warn(LABEL_LOG, "TabDigit: onEstimateSize");
+        calculateTextSize(mTextMeasured);
+
+        int childWidth = mTextMeasured.getWidth() + mPadding;
+        int childHeight = mTextMeasured.getHeight() + mPadding;
+        measureTabs(childWidth, childHeight);
+
+        int maxChildWidth = mMiddleTab.maxWith();
+        int maxChildHeight = 2 * mMiddleTab.maxHeight();
+
+
+        // int resolvedWidth = resolveSize(maxChildWidth, widthMeasureSpec);
+        // int resolvedHeight = resolveSize(maxChildHeight, heightMeasureSpec);
+        int width = measureDimension(childWidth, widthMeasureSpec);
+        int height = measureDimension(childHeight, heightMeasureSpec);
+
+
+        //Do Size Estimation here and don't forgot to call setEstimatedSize(width, height)
+        setEstimatedSize(EstimateSpec.getSizeWithMode(width, EstimateSpec.PRECISE),
+                EstimateSpec.getSizeWithMode(height, EstimateSpec.PRECISE));
+        // setMeasuredDimension(resolvedWidth, resolvedHeight);
+
+
+        setComponentMinSize(200, 200);
+        ShapeElement shapeElement = new ShapeElement();
+        shapeElement.setRgbColor(new RgbColor(0,0,0));
+        setBackground(shapeElement);
+        return true;
+    }
+
+
+    @Override
+    public void onDraw(Component component, Canvas canvas) {
+        HiLog.warn(LABEL_LOG, "TabDigit: onDraw");
+        drawTabs(canvas);
+        drawDivider(canvas);
+        // ViewCompat.postOnAnimationDelayed(this, this, 40);
+        uiTaskDispatcher.delayDispatch(this, 40);
+
+    }
+    //#endregion listeners
 
     public class Tab {
 
@@ -391,40 +455,35 @@ public class TabDigit extends View implements Runnable {
 
         public void measure(int width, int height) {
             Rect area = new Rect(-width / 2, 0, width / 2, height / 2);
-            Log.d(TAG, "measure: area -> " + area);
             mStartBounds.set(area);
             mEndBounds.set(area);
             mEndBounds.offset(0, -height / 2);
         }
 
         public int maxWith() {
-            Log.d(TAG, "maxWith: ");
             RectF rect = new RectF(mStartBounds);
             Matrix projectionMatrix = new Matrix();
             MatrixHelper.translate(projectionMatrix, mStartBounds.left, -mStartBounds.top, 0);
             mMeasuredMatrixWidth.reset();
             mMeasuredMatrixWidth.setConcat(projectionMatrix, MatrixHelper.ROTATE_X_90);
-            mMeasuredMatrixWidth.mapRect(rect);
-            return (int) rect.width();
+            mMeasuredMatrixWidth.mapRect(rect.toRectFloat());
+            return (int) rect.getWidth();
         }
 
         public int maxHeight() {
-            Log.d(TAG, "maxHeight: ");
             RectF rect = new RectF(mStartBounds);
             Matrix projectionMatrix = new Matrix();
             mMeasuredMatrixHeight.reset();
             mMeasuredMatrixHeight.setConcat(projectionMatrix, MatrixHelper.ROTATE_X_0);
-            mMeasuredMatrixHeight.mapRect(rect);
-            return (int) rect.height();
+            mMeasuredMatrixHeight.mapRect(rect.toRectFloat());
+            return (int) rect.getHeight();
         }
 
         public void setChar(int index) {
-            Log.d(TAG, "setChar: ");
             mCurrIndex = index > mChars.length ? 0 : index;
         }
 
         public void next() {
-            Log.d(TAG, "next: ");
             mCurrIndex++;
             if (mCurrIndex >= mChars.length) {
                 mCurrIndex = 0;
@@ -433,13 +492,10 @@ public class TabDigit extends View implements Runnable {
 
         public void rotate(int alpha) {
             mAlpha = alpha;
-            Log.d(TAG, "rotate: " + mRotationModelViewMatrix);
             MatrixHelper.rotateX(mRotationModelViewMatrix, alpha);
-            Log.d(TAG, "rotate: " + mRotationModelViewMatrix);
         }
 
         public void draw(Canvas canvas, int i) {
-            Log.d(TAG, "draw: "+i);
             drawBackground(canvas, i);
             drawText(canvas);
         }
@@ -458,35 +514,33 @@ public class TabDigit extends View implements Runnable {
                     break;
 
             }
-            Log.d(TAG, "drawBackground: " + mStartBounds);
             canvas.save();
-            mModelViewMatrix.set(mRotationModelViewMatrix);
+            mModelViewMatrix.setMatrix(mRotationModelViewMatrix);
             applyTransformation(canvas, mModelViewMatrix);
-            canvas.drawRoundRect(mStartBounds, mCornerSize, mCornerSize, p);
+            HiLog.warn(LABEL_LOG, "Tab: drawBackground"+mStartBounds.toRectFloat());
+            canvas.drawRoundRect(mStartBounds.toRectFloat(), mCornerSize, mCornerSize, p);
             canvas.restore();
         }
 
         private void drawText(Canvas canvas) {
-            Log.d(TAG, "drawText: ");
             canvas.save();
-            mModelViewMatrix.set(mRotationModelViewMatrix);
+            mModelViewMatrix.setMatrix(mRotationModelViewMatrix);
             RectF clip = mStartBounds;
             if (mAlpha > 90) {
                 mModelViewMatrix.setConcat(mModelViewMatrix, MatrixHelper.MIRROR_X);
                 clip = mEndBounds;
             }
             applyTransformation(canvas, mModelViewMatrix);
-            canvas.clipRect(clip);
-            Log.d(TAG, "drawText: clip -> " + clip);
-            Log.d(TAG, "drawText: mModelViewMatrix -> " + mModelViewMatrix);
-            Log.d(TAG, "drawText: mEndBounds -> " + mEndBounds);
-            Log.d(TAG, "drawText: mChars[mCurrIndex] -> " + mChars[mCurrIndex]);
-            canvas.drawText(Character.toString(mChars[mCurrIndex]), 0, 1, -mTextMeasured.centerX(), -mTextMeasured.centerY(), mNumberPaint);
+            canvas.clipRect(clip.toRectFloat());
+            canvas.drawText(mNumberPaint, Character.toString(mChars[mCurrIndex]), -mTextMeasured.getCenterX(), -mTextMeasured.getCenterY());
+//            canvas.drawText(
+//                    Character.toString(mChars[mCurrIndex]), 0, 1,
+//                    -mTextMeasured.getCenterX(), -mTextMeasured.getCenterY(),
+//                    mNumberPaint);
             canvas.restore();
         }
 
         private void applyTransformation(Canvas canvas, Matrix matrix) {
-            Log.d(TAG, "applyTransformation: ");
             mModelViewProjectionMatrix.reset();
             mModelViewProjectionMatrix.setConcat(mProjectionMatrix, matrix);
             canvas.concat(mModelViewProjectionMatrix);

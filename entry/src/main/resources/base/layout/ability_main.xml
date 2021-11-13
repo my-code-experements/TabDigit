@@ -16,4 +16,19 @@
         ohos:text_size="40vp"
         />
 
+    <com.xenione.digit.TabDigit
+        ohos:height="match_content"
+        ohos:width="match_content"
+        ohos:id="$+id:charView1"
+        />
+    <!--        android:id="@+id/charView1"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="center"-->
+<!--        android:layout_weight="1"-->
+<!--        custom:backgroundColor="#000000"-->
+<!--        custom:padding="10dp"-->
+<!--        custom:textColor="#ffffff"-->
+<!--        custom:textSize="60dp" />-->
+
 </DirectionalLayout>
