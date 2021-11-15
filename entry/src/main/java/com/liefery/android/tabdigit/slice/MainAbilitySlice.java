@@ -19,8 +19,6 @@ public class MainAbilitySlice extends AbilitySlice implements Runnable {
         super.onStart(intent);
         super.setUIContent(ResourceTable.Layout_ability_main);
         try {
-            Text text = (Text) findComponentById(ResourceTable.Id_text_helloworld);
-            text.setText("asnkldnklsand");
             tabDigit1 = (TabDigit) findComponentById(ResourceTable.Id_charView1);
             assert tabDigit1 != null;
             uiTaskDispatcher.delayDispatch(this,1000);  
