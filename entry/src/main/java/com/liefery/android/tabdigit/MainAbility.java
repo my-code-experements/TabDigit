@@ -47,7 +47,7 @@ public class MainAbility extends Ability  implements Runnable {
     public void run() {
 //        HiLog.warn(LABEL_LOG, "MainAbility: run");
         tabDigit1.start();
-        uiTaskDispatcher.delayDispatch(this,1000);
+        uiTaskDispatcher.delayDispatch(this,2000);
 
 //        ViewCompat.postOnAnimationDelayed(tabDigit1, this, 1000);
     }

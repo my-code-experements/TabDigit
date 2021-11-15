@@ -1,9 +1,13 @@
 package com.xenione.digit;
 
+import ohos.hiviewdfx.HiLog;
+import ohos.hiviewdfx.HiLogLabel;
+
 /**
  * rotates middle tab upwards
  */
 public final class TabAnimationUp extends AbstractTabAnimation {
+    private static final HiLogLabel LABEL_LOG = new HiLogLabel(HiLog.LOG_APP, 0x00201, "-MainAbility-");
 
     public TabAnimationUp(TabDigit.Tab mTopTab, TabDigit.Tab mBottomTab, TabDigit.Tab mMiddleTab) {
         super(mTopTab, mBottomTab, mMiddleTab);
@@ -19,18 +23,20 @@ public final class TabAnimationUp extends AbstractTabAnimation {
 
     @Override
     public void run() {
-
+        HiLog.warn(LABEL_LOG, "TabAnimationUp: mTime -> "+mTime);
         if (mTime == -1) {
             return;
         }
 
         switch (state) {
             case LOWER_POSITION: {
+                HiLog.warn(LABEL_LOG, "TabAnimationUp: LOWER_POSITION mAlpha -> "+mAlpha);
                 mBottomTab.next();
                 state = MIDDLE_POSITION;
                 break;
             }
             case MIDDLE_POSITION: {
+                HiLog.warn(LABEL_LOG, "TabAnimationUp: MIDDLE_POSITION mAlpha -> "+mAlpha);
                 if (mAlpha > 90) {
                     mMiddleTab.next();
                     state = UPPER_POSITION;
@@ -38,6 +44,7 @@ public final class TabAnimationUp extends AbstractTabAnimation {
                 break;
             }
             case UPPER_POSITION: {
+                HiLog.warn(LABEL_LOG, "TabAnimationUp: UPPER_POSITION mAlpha -> "+mAlpha);
                 if (mAlpha >= 180) {
                     mTopTab.next();
                     state = LOWER_POSITION;
