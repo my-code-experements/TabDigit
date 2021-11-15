@@ -589,9 +589,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
             canvas.save();
             mModelViewMatrix.setMatrix(mRotationModelViewMatrix);
             applyTransformation(canvas, mModelViewMatrix);
-//            HiLog.warn(LABEL_LOG, "Tab: mModelViewMatrix "+mModelViewMatrix);
-            HiLog.warn(LABEL_LOG, "Tab: drawBackground "+i);
-//            HiLog.warn(LABEL_LOG, "Tab: drawBackground "+mModelViewMatrix);
             canvas.drawRoundRect(mStartBounds.toRectFloat(), mCornerSize, mCornerSize, p);
             canvas.restore();
         }
@@ -605,10 +602,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
                 clip = mEndBounds;
             }
             applyTransformation(canvas, mModelViewMatrix);
-//            HiLog.warn(LABEL_LOG, "Tab: drawText"+mEndBounds);
-//            HiLog.warn(LABEL_LOG, "Tab: drawText:mModelViewMatrix "+mModelViewMatrix);
-//            HiLog.warn(LABEL_LOG, "Tab: clip "+clip.toRectFloat());
-//            HiLog.warn(LABEL_LOG, String.format("Tab: drawText (%s,%s)",  -mTextMeasured.getCenterX(), -mTextMeasured.getCenterY()));
             canvas.clipRect(clip.toRectFloat());
             canvas.drawText(
                     mNumberPaint,
@@ -616,10 +609,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
                     -mTextMeasured.getCenterX(),
                     -mTextMeasured.getCenterY()
             );
-//            canvas.drawText(
-//                    Character.toString(mChars[mCurrIndex]), 0, 1,
-//                    -mTextMeasured.getCenterX(), -mTextMeasured.getCenterY(),
-//                    mNumberPaint);
             canvas.restore();
         }
         //#endregion draw
