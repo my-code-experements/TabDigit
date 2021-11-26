@@ -1,6 +1,10 @@
 package com.xenione.digit;
 
+import ohos.hiviewdfx.HiLog;
+import ohos.hiviewdfx.HiLogLabel;
+
 public abstract class AbstractTabAnimation {
+    private static final HiLogLabel LABEL_LOG = new HiLogLabel(HiLog.LOG_APP, 0x00201, "-MainAbility-");
 
     protected final static int LOWER_POSITION = 0;
     protected final static int MIDDLE_POSITION = 1;
@@ -13,7 +17,7 @@ public abstract class AbstractTabAnimation {
     protected int state;
     protected int mAlpha = 0;
     protected long mTime = -1;
-    protected float mElapsedTime = 1000.0f;
+    protected float mElapsedTime = 10000.0f;
 
     public AbstractTabAnimation(TabDigit.Tab mTopTab, TabDigit.Tab mBottomTab, TabDigit.Tab mMiddleTab) {
         this.mTopTab = mTopTab;
@@ -23,6 +27,7 @@ public abstract class AbstractTabAnimation {
     }
 
     public void start() {
+        HiLog.warn(LABEL_LOG, "AbstractTabAnimation: start "+mTime);
         makeSureCycleIsClosed();
         mTime = System.currentTimeMillis();
     }

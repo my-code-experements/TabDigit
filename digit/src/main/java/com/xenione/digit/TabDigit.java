@@ -40,6 +40,8 @@ import ohos.agp.utils.Matrix;
 import ohos.agp.utils.Rect;
 import ohos.app.Context;
 import ohos.app.dispatcher.TaskDispatcher;
+import ohos.eventhandler.EventHandler;
+import ohos.eventhandler.EventRunner;
 import ohos.hiviewdfx.HiLog;
 import ohos.hiviewdfx.HiLogLabel;
 
@@ -93,7 +95,7 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
 
     private char[] mChars = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     //#endregion internal variables
-
+    EventHandler eventHandler;
     //#region constructor
 
     public TabDigit(Context context) {
@@ -124,7 +126,9 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         addDrawTask(this);
         setEstimateSizeListener(this);
         setLayoutRefreshedListener(this);
+        eventHandler=new EventHandler(EventRunner.getMainEventRunner());
         initPaints();
+
 
         int padding = AttrHelper.fp2px(10,getContext());
         int textSize = 165;//AttrHelper.fp2px(60,getContext());
@@ -491,7 +495,8 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         drawDivider(canvas);
         // ViewCompat.postOnAnimationDelayed(this, this, 40);
 
-        uiTaskDispatcher.delayDispatch(this, 40);
+//        uiTaskDispatcher.delayDispatch(this, 40);
+        eventHandler.postTask(this,100);
 
     }
     //#endregion listeners
@@ -552,6 +557,7 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         }
 
         public void next() {
+            HiLog.warn(LABEL_LOG, "Tab: next");
             mCurrIndex++;
             if (mCurrIndex >= mChars.length) {
                 mCurrIndex = 0;
@@ -587,6 +593,7 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
 
             }
             canvas.save();
+            HiLog.warn(LABEL_LOG, "Tab: drawBackground rotate "+mRotationModelViewMatrix);
             mModelViewMatrix.setMatrix(mRotationModelViewMatrix);
             applyTransformation(canvas, mModelViewMatrix);
             canvas.drawRoundRect(mStartBounds.toRectFloat(), mCornerSize, mCornerSize, p);
@@ -601,6 +608,7 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
                 mModelViewMatrix.setConcat(mModelViewMatrix, MatrixHelper.MIRROR_X);
                 clip = mEndBounds;
             }
+
             applyTransformation(canvas, mModelViewMatrix);
             canvas.clipRect(clip.toRectFloat());
             canvas.drawText(

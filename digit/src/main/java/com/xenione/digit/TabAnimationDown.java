@@ -28,7 +28,7 @@ public final class TabAnimationDown extends AbstractTabAnimation {
     @Override
     public void run() {
 
-//        HiLog.warn(LABEL_LOG, "TabAnimationDown: mTime " + mTime);
+        HiLog.warn(LABEL_LOG, "TabAnimationDown: mTime " + mTime);
         if (mTime == -1) {
             return;
         }
@@ -37,7 +37,7 @@ public final class TabAnimationDown extends AbstractTabAnimation {
             case LOWER_POSITION: {
 //                HiLog.warn(LABEL_LOG, "run: LOWER_POSITION: mAlpha -> " + mAlpha + " : " + (mAlpha <= 0));
                 if (mAlpha <= 0) {
-                    mBottomTab.next();
+//                    mBottomTab.next();
                     state = UPPER_POSITION;
                     mTime = -1; // animation finished
                 }
@@ -46,14 +46,14 @@ public final class TabAnimationDown extends AbstractTabAnimation {
             case MIDDLE_POSITION: {
 //                HiLog.warn(LABEL_LOG, "run: MIDDLE_POSITION: mAlpha -> " + mAlpha + " : " + (mAlpha <= 0));
                 if (mAlpha < 90) {
-                    mMiddleTab.next();
+//                    mMiddleTab.next();
                     state = LOWER_POSITION;
                 }
                 break;
             }
             case UPPER_POSITION: {
 //                HiLog.warn(LABEL_LOG, "run: UPPER_POSITION: mAlpha -> " + mAlpha + " : " + (mAlpha <= 0));
-                mTopTab.next();
+//                mTopTab.next();
                 state = MIDDLE_POSITION;
                 break;
             }
@@ -77,7 +77,7 @@ public final class TabAnimationDown extends AbstractTabAnimation {
         }
         switch (state) {
             case LOWER_POSITION: {
-                mBottomTab.next();
+//                mBottomTab.next();
                 state = UPPER_POSITION;
                 mTime = -1; // animation finished
             }

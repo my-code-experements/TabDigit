@@ -31,14 +31,14 @@ public final class TabAnimationUp extends AbstractTabAnimation {
         switch (state) {
             case LOWER_POSITION: {
                 HiLog.warn(LABEL_LOG, "TabAnimationUp: LOWER_POSITION mAlpha -> "+mAlpha);
-                mBottomTab.next();
+//                mBottomTab.next();
                 state = MIDDLE_POSITION;
                 break;
             }
             case MIDDLE_POSITION: {
                 HiLog.warn(LABEL_LOG, "TabAnimationUp: MIDDLE_POSITION mAlpha -> "+mAlpha);
                 if (mAlpha > 90) {
-                    mMiddleTab.next();
+//                    mMiddleTab.next();
                     state = UPPER_POSITION;
                 }
                 break;
@@ -46,7 +46,7 @@ public final class TabAnimationUp extends AbstractTabAnimation {
             case UPPER_POSITION: {
                 HiLog.warn(LABEL_LOG, "TabAnimationUp: UPPER_POSITION mAlpha -> "+mAlpha);
                 if (mAlpha >= 180) {
-                    mTopTab.next();
+//                    mTopTab.next();
                     state = LOWER_POSITION;
                     mTime = -1; // animation finished
                 }
@@ -69,11 +69,11 @@ public final class TabAnimationUp extends AbstractTabAnimation {
         }
         switch (state) {
             case LOWER_POSITION: {
-                mMiddleTab.next();
+//                mMiddleTab.next();
                 state = UPPER_POSITION;
             }
             case UPPER_POSITION: {
-                mTopTab.next();
+//                mTopTab.next();
                 state = LOWER_POSITION;
                 mTime = -1; // animation finished
             }
