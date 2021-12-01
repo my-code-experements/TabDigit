@@ -2,6 +2,9 @@ package com.liefery.android.tabdigit;
 
 import ohos.aafwk.ability.AbilityPackage;
 
+/**
+ * MyApplication.
+ */
 public class MyApplication extends AbilityPackage {
     @Override
     public void onInitialize() {

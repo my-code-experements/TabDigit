@@ -2,18 +2,34 @@ package com.xenione.digit;
 
 import ohos.agp.utils.Rect;
 import ohos.agp.utils.RectFloat;
-import ohos.hiviewdfx.HiLog;
-import ohos.hiviewdfx.HiLogLabel;
 
+/**
+ * RectF.
+ */
 public class RectF {
-    private static final HiLogLabel LABEL_LOG = new HiLogLabel(HiLog.LOG_APP, 0x00201, "-MainAbility-");
+    private float left;
+    private float top;
+    private float right;
+    private float bottom;
 
-    public float left;
-    public float top;
-    public float right;
-    public float bottom;
+
+    public float getLeft() {
+        return left;
+    }
+
+    public float getRight() {
+        return right;
+    }
+
+    public float getTop() {
+        return top;
+    }
+
+    public float getBottom() {
+        return bottom;
+    }
+
     //#region constructor
-
     public RectF() {
 
     }
@@ -29,7 +45,6 @@ public class RectF {
      * @param bottom The Y coordinate of the bottom of the rectangle
      */
     public RectF(float left, float top, float right, float bottom) {
-        HiLog.warn(LABEL_LOG, "RectF: RectF");
         this.left = left;
         this.top = top;
         this.right = right;
@@ -44,7 +59,6 @@ public class RectF {
      *          rectangle.
      */
     public RectF(RectF r) {
-        HiLog.warn(LABEL_LOG, "RectF: RectF" + r);
         if (r == null) {
             left = top = right = bottom = 0.0f;
         } else {
@@ -55,6 +69,11 @@ public class RectF {
         }
     }
 
+    /**
+     * create a RectF with a Rect.
+     *
+     * @param r Rect
+     */
     public RectF(Rect r) {
         if (r == null) {
             left = top = right = bottom = 0.0f;
@@ -65,7 +84,7 @@ public class RectF {
             bottom = r.bottom;
         }
     }
-//#endregion constructor
+    //#endregion constructor
 
     /**
      * Set the rectangle's coordinates to the specified values. Note: no range
@@ -105,7 +124,6 @@ public class RectF {
      *            rectangle.
      */
     public void set(Rect src) {
-        HiLog.warn(LABEL_LOG, "RectF: set" + src);
         this.left = src.left;
         this.top = src.top;
         this.right = src.right;
@@ -120,7 +138,6 @@ public class RectF {
      * @param dy The amount to add to the rectangle's top and bottom coordinates
      */
     public void offset(float dx, float dy) {
-        HiLog.warn(LABEL_LOG, String.format("RectF: offset(dx: %.2f, dy: %.2f)", dx, dy));
         left += dx;
         top += dy;
         right += dx;
@@ -128,22 +145,18 @@ public class RectF {
     }
 
     /**
-     * @return the rectangle's height. This does not check for a valid rectangle
+     * Get rectangle's height. This does not check for a valid rectangle
      * (i.e. top <= bottom) so the result may be negative.
+     *
+     * @return the rectangle's height.
      */
     public final float getHeight() {
-        float height = bottom - top;
-//            height = 200;
-//            HiLog.warn(LABEL_LOG, "RectF: getHeight" + (height));
-        return height;
+        return bottom - top;
     }
 
     public RectFloat toRectFloat() {
         int mul = 1;
-        RectFloat r = new RectFloat(left * mul, top * mul, right * mul, bottom * mul);
-//            HiLog.warn(LABEL_LOG, "RectF: toRectFloat -> " + r);
-        return r;
-//            return new RectFloat(-510, 0, 510, 1740);
+        return new RectFloat(left * mul, top * mul, right * mul, bottom * mul);
     }
 
 
@@ -153,14 +166,13 @@ public class RectF {
     }
 
     /**
-     * @return the rectangle's width. This does not check for a valid rectangle
+     * Get rectangle width. This does not check for a valid rectangle
      * (i.e. left <= right) so the result may be negative.
+     *
+     * @return the rectangle's width.
      */
     public final float getWidth() {
-        float width = right - left;
-        width = 100;
-        HiLog.warn(LABEL_LOG, "RectF: getWidth" + (width));
-        return width;
+        return right - left;
     }
 
 }

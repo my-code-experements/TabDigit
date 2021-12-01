@@ -20,6 +20,7 @@ import ohos.eventhandler.EventHandler;
 import ohos.eventhandler.EventRunner;
 import ohos.hiviewdfx.HiLog;
 import ohos.hiviewdfx.HiLogLabel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,10 +37,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
      * true: rotate downwards
      */
     private boolean mReverseRotation = false;
-
-    private Tab mTopTab;
-
-    private Tab mBottomTab;
 
     private Tab mMiddleTab;
     Engine engine;
@@ -96,6 +93,12 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
 
     //#region initialize
 
+    /**
+     * initialize the TabDigit.
+     *
+     * @param context application context
+     * @param attrs   attrs
+     */
     public void init(Context context, AttrSet attrs) {
         addDrawTask(this);
         setEstimateSizeListener(this);
@@ -105,34 +108,10 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
 
 
         int padding = AttrHelper.fp2px(10, getContext());
-        int textSize = 165;//AttrHelper.fp2px(60,getContext());
-        int cornerSize = 30;
-        int textColor = 1;
-        int backgroundColor = 1;
-        boolean reverseRotation = false;
-        /**
-         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.TabDigit, 0, 0);
-         final int num = ta.getIndexCount();
-         for (int i = 0; i < num; i++) {
-         int attr = ta.getIndex(i);
-         if (attr == R.styleable.TabDigit_textSize) {
-         textSize = ta.getDimensionPixelSize(attr, -1);
-         Log.d(TAG, "init: textSize " + textSize);
-         } else if (attr == R.styleable.TabDigit_padding) {
-         padding = ta.getDimensionPixelSize(attr, -1);
-         } else if (attr == R.styleable.TabDigit_cornerSizeZ) {
-         cornerSize = ta.getDimensionPixelSize(attr, -1);
-         } else if (attr == R.styleable.TabDigit_textColor) {
-         textColor = ta.getColor(attr, 1);
-         } else if (attr == R.styleable.TabDigit_backgroundColor) {
-         backgroundColor = ta.getColor(attr, 1);
-         } else if (attr == R.styleable.TabDigit_reverseRotation) {
-         reverseRotation = ta.getBoolean(attr, false);
-         }
-         }
-         ta.recycle();
-         *
-         */
+        int textSize = AttrHelper.fp2px(60, getContext());
+        final int cornerSize = 30;
+        final boolean reverseRotation = false;
+
 
         HiLog.warn(LABEL_LOG, "TabDigit: textSize " + textSize);
         if (textSize > 0) {
@@ -145,23 +124,9 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
             mCornerSize = cornerSize;
         }
 
-
-        /** set values
-         *
-
-
-
-         if (textColor < 1) {
-         mNumberPaint.setColor(textColor);
-         }
-
-         if (backgroundColor < 1) {
-         mBackgroundPaint.setColor(backgroundColor);
-         }
-         */
-
         mReverseRotation = reverseRotation;
         mReverseRotation = true;
+
 
         Optional<Engine> optionalEngine = AgpEngineFactory.createEngine();
         engine = optionalEngine.get();
@@ -200,19 +165,21 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         animatorValue.setDuration(1000);
         animatorValue.setLoopedCount(Animator.INFINITE);
         // top Tab
-        mTopTab = new Tab();
+        Tab mTopTab = new Tab();
         mTopTab.rotate(180);
         tabs.add(mTopTab);
 
         // bottom Tab
-        mBottomTab = new Tab();
+        Tab mBottomTab = new Tab();
         tabs.add(mBottomTab);
 
         // middle Tab
         mMiddleTab = new Tab();
         tabs.add(mMiddleTab);
 
-        tabAnimation = mReverseRotation ? new TabAnimationDown(mTopTab, mBottomTab, mMiddleTab) : new TabAnimationUp(mTopTab, mBottomTab, mMiddleTab);
+        tabAnimation = mReverseRotation
+                ? new TabAnimationDown(mTopTab, mBottomTab, mMiddleTab)
+                : new TabAnimationUp(mTopTab, mBottomTab, mMiddleTab);
 
         tabAnimation.initMiddleTab();
 
@@ -238,7 +205,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         mProjectionMatrix.reset();
         int centerY = getHeight() / 2;
         int centerX = getWidth() / 2;
-        HiLog.warn(LABEL_LOG, String.format("TabDigit: setupProjectionMatrix(centerX: %s, centerY: %s)", centerX, centerY));
         MatrixHelper.translate(mProjectionMatrix, centerX, centerY, 0);
     }
 
@@ -274,7 +240,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
                 "8"
                 //, 0, 1, rect
         );
-        HiLog.warn(LABEL_LOG, "TabDigit: calculateTextSize " + rect1);
         rect.modify(rect1);
     }
     //#endregion some calculation not important
@@ -285,7 +250,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
     public void setTextSize(int size) {
         mNumberPaint.setTextSize(size);
         invalidate();
-//        requestLayout();
     }
 
     public int getTextSize() {
@@ -295,14 +259,13 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
     public void setPadding(int padding) {
         mPadding = padding;
         invalidate();
-//        requestLayout();
     }
 
     /**
      * Sets chars that are going to be displayed.
      * Note: <b>That only one digit is allow per character.</b>
      *
-     * @param chars
+     * @param chars chars
      */
     public void setChars(char[] chars) {
         mChars = chars;
@@ -317,7 +280,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         mDividerPaint.setColor(color);
     }
 
-    // todo: fix the clash
     public int getMPadding() {
         return mPadding;
     }
@@ -348,8 +310,10 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
     }
     //#endregion getter & setter
 
+    /**
+     * start the animation.
+     */
     public void start() {
-        HiLog.warn(LABEL_LOG, "TabDigit: start");
         internalCounter = 0;
         tabAnimation.start();
         invalidate();
@@ -359,8 +323,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
 
     @Override
     public void run() {
-        HiLog.warn(LABEL_LOG, "TabDigit: run");
-
         tabAnimation.run();
         invalidate();
     }
@@ -400,47 +362,26 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
 
     @Override
     public void onRefreshed(Component component) {
-        HiLog.warn(LABEL_LOG, "TabDigit: onRefreshed");
         if (oldWidth != component.getWidth() || oldHeight != component.getHeight()) {
             setupProjectionMatrix();
-        } else {
-//            setupProjectionMatrix();
-            HiLog.warn(LABEL_LOG, "TabDigit: onRefreshed skip...");
-
         }
         oldWidth = component.getWidth();
         oldHeight = component.getHeight();
-        HiLog.warn(LABEL_LOG, String.format("TabDigit: onRefreshed(height: %s,width: %s)", oldHeight, oldWidth));
-        HiLog.warn(LABEL_LOG, "----------------------------");
-        HiLog.warn(LABEL_LOG, String.format("TabDigit: onRefreshed(height: %s,width: %s)", getHeight(), getWidth()));
     }
-
-    //    @Override
-//    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-//        Log.d(TAG, "onSizeChanged: ");
-//        if (w != oldw || h != oldh) {
-//            setupProjectionMatrix();
-//        }
-//    }
 
 
     @Override
     public boolean onEstimateSize(int widthMeasureSpec, int heightMeasureSpec) {
-        HiLog.warn(LABEL_LOG, "TabDigit: onEstimateSize " + mTextMeasured);
         calculateTextSize(mTextMeasured);
-        HiLog.warn(LABEL_LOG, "TabDigit: onEstimateSize " + mTextMeasured);
 
         int childWidth = mTextMeasured.getWidth() + mPadding;
         int childHeight = mTextMeasured.getHeight() + mPadding;
         measureTabs(childWidth, childHeight);
-        HiLog.warn(LABEL_LOG, String.format("TabDigit: onEstimateSize measureTabs(%s,%s)", childWidth, childHeight));
 
         int maxChildWidth = mMiddleTab.maxWith();
         int maxChildHeight = 2 * mMiddleTab.maxHeight();
 
 
-        // int resolvedWidth = resolveSize(maxChildWidth, widthMeasureSpec);
-        // int resolvedHeight = resolveSize(maxChildHeight, heightMeasureSpec);
         int width = measureDimension(maxChildWidth, widthMeasureSpec);
         int height = measureDimension(maxChildHeight, heightMeasureSpec);
 
@@ -448,12 +389,7 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         //Do Size Estimation here and don't forgot to call setEstimatedSize(width, height)
         setEstimatedSize(EstimateSpec.getSizeWithMode(width, EstimateSpec.PRECISE),
                 EstimateSpec.getSizeWithMode(height, EstimateSpec.PRECISE));
-        // setMeasuredDimension(resolvedWidth, resolvedHeight);
 
-        HiLog.warn(LABEL_LOG, String.format("TabDigit: onEstimateSize setEstimatedSize(width:%s, height:%s)", width, height));
-        HiLog.warn(LABEL_LOG, String.format("TabDigit: onEstimateSize setEstimatedSize(maxChildWidth:%s, maxChildHeight:%s)", maxChildWidth, maxChildHeight));
-        HiLog.warn(LABEL_LOG, String.format("TabDigit: onEstimateSize setEstimatedSize(widthMeasureSpec:%s, heightMeasureSpec:%s)", widthMeasureSpec, heightMeasureSpec));
-//        setComponentMinSize(200, 200);
         ShapeElement shapeElement = new ShapeElement();
         shapeElement.setRgbColor(new RgbColor(150, 150, 80));
         setBackground(shapeElement);
@@ -466,16 +402,16 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
     @Override
     public void onDraw(Component component, Canvas canvas) {
         internalCounter++;
-        HiLog.warn(LABEL_LOG, "TabDigit: onDraw" + internalCounter);
         drawTabs(canvas);
         drawDivider(canvas);
-        // ViewCompat.postOnAnimationDelayed(this, this, 40);
-        // uiTaskDispatcher.delayDispatch(this, 40);
         eventHandler.postTask(this, 100);
 
     }
     //#endregion listeners
 
+    /**
+     * tab class.
+     */
     public class Tab {
 
         //#region internal variable
@@ -500,6 +436,13 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         //#endregion internal variable
 
         //#region calculation
+
+        /**
+         * measure the height and width.
+         *
+         * @param width  width
+         * @param height height
+         */
         public void measure(int width, int height) {
             Rect area = new Rect(-width / 2, 0, width / 2, height / 2);
             mStartBounds.set(area);
@@ -507,16 +450,26 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
             mEndBounds.offset(0, -height / 2);
         }
 
+        /**
+         * get the max width of the tab.
+         *
+         * @return max width of the tab
+         */
         public int maxWith() {
-            RectF rect = new RectF(mStartBounds);
+            final RectF rect = new RectF(mStartBounds);
             Matrix projectionMatrix = new Matrix();
-            MatrixHelper.translate(projectionMatrix, mStartBounds.left, -mStartBounds.top, 0);
+            MatrixHelper.translate(projectionMatrix, mStartBounds.getLeft(), -mStartBounds.getTop(), 0);
             mMeasuredMatrixWidth.reset();
             mMeasuredMatrixWidth.setConcat(projectionMatrix, MatrixHelper.ROTATE_X_90);
             mMeasuredMatrixWidth.mapRect(rect.toRectFloat());
             return (int) rect.getWidth();
         }
 
+        /**
+         * Get the max height of the tab.
+         *
+         * @return max height of the tab
+         */
         public int maxHeight() {
             RectF rect = new RectF(mStartBounds);
             Matrix projectionMatrix = new Matrix();
@@ -531,8 +484,10 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
             mCurrIndex = index > mChars.length ? 0 : index;
         }
 
+        /**
+         * go to next digit.
+         */
         public void next() {
-            HiLog.warn(LABEL_LOG, "Tab: next");
             mCurrIndex++;
             if (mCurrIndex >= mChars.length) {
                 mCurrIndex = 0;
@@ -540,7 +495,6 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         }
 
         public void rotate(int alpha) {
-            HiLog.warn(LABEL_LOG, String.format("Tab: rotate (%s)", alpha));
             mAlpha = alpha;
             MatrixHelper.rotateX(mRotationModelViewMatrix, alpha);
         }
@@ -553,7 +507,7 @@ public class TabDigit extends Component implements Runnable, Component.DrawTask,
         //#region draw
 
         private void drawBackground(Canvas canvas, int i) {
-            Paint p = mBackgroundPaint;
+            Paint p;
             switch (i) {
                 case 1:
                     p = mBackgroundPaint2;

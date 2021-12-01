@@ -1,16 +1,13 @@
 package com.xenione.digit;
 
-import ohos.hiviewdfx.HiLog;
-import ohos.hiviewdfx.HiLogLabel;
 
 /**
- * rotates middle tab upwards
+ * rotates middle tab upwards.
  */
 public final class TabAnimationUp extends AbstractTabAnimation {
-    private static final HiLogLabel LABEL_LOG = new HiLogLabel(HiLog.LOG_APP, 0x00201, "-MainAbility-");
 
-    public TabAnimationUp(TabDigit.Tab mTopTab, TabDigit.Tab mBottomTab, TabDigit.Tab mMiddleTab) {
-        super(mTopTab, mBottomTab, mMiddleTab);
+    public TabAnimationUp(TabDigit.Tab topTab, TabDigit.Tab bottomTab, TabDigit.Tab middleTab) {
+        super(topTab, bottomTab, middleTab);
     }
 
     @Override
@@ -19,34 +16,33 @@ public final class TabAnimationUp extends AbstractTabAnimation {
     }
 
     @Override
-    public void initMiddleTab() { /* nothing to do */ }
+    public void initMiddleTab() {
+        /* nothing to do */
+    }
+
 
     @Override
     public void run() {
-        HiLog.warn(LABEL_LOG, "TabAnimationUp: mTime -> "+mTime);
         if (mTime == -1) {
             return;
         }
 
         switch (state) {
             case LOWER_POSITION: {
-                HiLog.warn(LABEL_LOG, "TabAnimationUp: LOWER_POSITION mAlpha -> "+mAlpha);
-//                mBottomTab.next();
+                mBottomTab.next();
                 state = MIDDLE_POSITION;
                 break;
             }
             case MIDDLE_POSITION: {
-                HiLog.warn(LABEL_LOG, "TabAnimationUp: MIDDLE_POSITION mAlpha -> "+mAlpha);
                 if (mAlpha > 90) {
-//                    mMiddleTab.next();
+                    mMiddleTab.next();
                     state = UPPER_POSITION;
                 }
                 break;
             }
             case UPPER_POSITION: {
-                HiLog.warn(LABEL_LOG, "TabAnimationUp: UPPER_POSITION mAlpha -> "+mAlpha);
                 if (mAlpha >= 180) {
-//                    mTopTab.next();
+                    mTopTab.next();
                     state = LOWER_POSITION;
                     mTime = -1; // animation finished
                 }
@@ -67,16 +63,13 @@ public final class TabAnimationUp extends AbstractTabAnimation {
         if (mTime == -1) {
             return;
         }
-        switch (state) {
-            case LOWER_POSITION: {
-//                mMiddleTab.next();
-                state = UPPER_POSITION;
-            }
-            case UPPER_POSITION: {
-//                mTopTab.next();
-                state = LOWER_POSITION;
-                mTime = -1; // animation finished
-            }
+        if (state == LOWER_POSITION) {
+            mMiddleTab.next();
+            state = UPPER_POSITION;
+        } else if (state == UPPER_POSITION) {
+            mTopTab.next();
+            state = LOWER_POSITION;
+            mTime = -1; // animation finished
         }
         mMiddleTab.rotate(180);
     }
