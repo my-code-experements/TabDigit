@@ -17,7 +17,7 @@ public abstract class AbstractTabAnimation {
     protected int state;
     protected int mAlpha = 0;
     protected long mTime = -1;
-    protected float mElapsedTime = 10000.0f;
+    protected float mElapsedTime = 1000.0f;
 
     public AbstractTabAnimation(TabDigit.Tab mTopTab, TabDigit.Tab mBottomTab, TabDigit.Tab mMiddleTab) {
         this.mTopTab = mTopTab;

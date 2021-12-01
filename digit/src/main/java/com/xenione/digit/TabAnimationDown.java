@@ -60,10 +60,11 @@ public final class TabAnimationDown extends AbstractTabAnimation {
         }
 
         if (mTime != -1) {
+//            HiLog.warn(LABEL_LOG, "run: rotate: ( "+System.currentTimeMillis()+" )");
             long delta = (System.currentTimeMillis() - mTime);
             mAlpha = 180 - (int) (180 * (1 - (1 * mElapsedTime - delta) / (1 * mElapsedTime)));
             mMiddleTab.rotate(mAlpha);
-            HiLog.warn(LABEL_LOG, "TabAnimationDown: mAlpha "+mAlpha);
+            HiLog.warn(LABEL_LOG, "TabAnimationDown: rotate: ( " + System.currentTimeMillis() + " ) (" + mAlpha + " )");
         }else{
             HiLog.warn(LABEL_LOG, "TabAnimationDown: mAlpha skip ....");
         }
